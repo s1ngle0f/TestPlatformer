@@ -17,6 +17,7 @@ public class Joystick extends Actor {
     private Vector2 centerPosition = new Vector2(), activeCenterPosition = new Vector2();
     private Vector2 result = new Vector2();
     private FitViewport gameViewport;
+    private float defaultX = 3, defaultY = 3;
 
     public Joystick(FitViewport gameViewport, OrthographicCamera camera, Texture bgCircle, Texture fgTexture, float bgCircleSize, float fgTextureSize) {
         this.gameViewport = gameViewport;
@@ -27,11 +28,15 @@ public class Joystick extends Actor {
         this.fgTextureSize = fgTextureSize;
     }
 
+    public void setDefaultPosition(float x, float y){
+        defaultX = x;
+        defaultY = y;
+    }
+
     @Override
     public void draw(Batch batch, float parentAlpha){
         calculatePosition();
         editResult();
-//        System.out.println(result);
         if(isStatic || Gdx.input.isTouched()){
             batch.draw( bgCircle,
                     centerPosition.x - bgCircleSize/2f,
@@ -54,13 +59,26 @@ public class Joystick extends Actor {
         result.set(0, 0);
         isTouchedInsideCircle = false;
         activeCenterPosition.set(centerPosition);
+//        if(isStatic){
+//            centerPosition.set(
+//                    defaultX,
+//                    defaultY
+//            );
+//        }
+//        else {
+//            centerPosition.set(
+//                    -100,
+//                    -100
+//            );
+//        }
+//        activeCenterPosition.set(centerPosition);
     }
 
     private void calculatePosition() {
         if(isStatic) {
             centerPosition.set(
-                    bgCircleSize + 3,
-                    bgCircleSize + 3
+                    defaultX,
+                    defaultY
             );
             if(Gdx.input.isTouched() &&
                     new Vector2(
