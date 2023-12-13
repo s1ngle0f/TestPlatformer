@@ -37,6 +37,9 @@ public class GameScreen implements Screen {
     private World world;
     private Player player;
     private Vector2 touch, worldTouch;
+    private Joystick joystick;
+
+    Texture deleteLater;
 
     public GameScreen(SpriteBatch batch, OrthographicCamera camera) {
         this.batch = batch;
@@ -44,7 +47,7 @@ public class GameScreen implements Screen {
 
         gameViewport = new FitViewport(MyGdxGame.WIDTH, MyGdxGame.HEIGHT, camera);
         hudViewport = new FitViewport(MyGdxGame.WIDTH, MyGdxGame.HEIGHT, camera);
-
+        deleteLater= new Texture("badlogic.jpg");
         tmxMapLoader = new TmxMapLoader();
         map = tmxMapLoader.load("tilemaps/example.tmx");
         renderer = new OrthogonalTiledMapRenderer(map, unitScale, batch);
@@ -72,12 +75,15 @@ public class GameScreen implements Screen {
             body.createFixture(fixtureDef);
         }
 
-        player = new Player(world, batch, new Texture("badlogic.jpg"));
+        player = new Player(world, batch, deleteLater);
 
         touch = new Vector2(
                 Gdx.input.getX() - gameViewport.getScreenX(),
                 gameViewport.getScreenHeight() - Gdx.input.getY() + gameViewport.getScreenY()
         );
+
+        joystick = new Joystick(gameViewport, batch, camera, new Texture("bgJoystick.png"),
+                new Texture("fgStick.png"), 20, 6);
     }
 
     @Override
@@ -109,6 +115,11 @@ public class GameScreen implements Screen {
                     "!!! " + worldTouch.x + ", " + worldTouch.y
             );
        }
+
+        batch.begin();
+//        batch.draw(deleteLater, 0, 0, MyGdxGame.WIDTH, MyGdxGame.HEIGHT);
+        joystick.render(delta);
+        batch.end();
 
         //Обновление камеры
         camera.update();
