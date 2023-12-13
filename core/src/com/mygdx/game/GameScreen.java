@@ -36,7 +36,7 @@ public class GameScreen implements Screen {
     private Box2DDebugRenderer b2dr;
     private World world;
     private Player player;
-    private Vector2 touch;
+    private Vector2 touch, worldTouch;
 
     public GameScreen(SpriteBatch batch, OrthographicCamera camera) {
         this.batch = batch;
@@ -101,12 +101,13 @@ public class GameScreen implements Screen {
             player.body.applyForceToCenter(new Vector2(-3000, 0), true);
         }
         if(Gdx.input.isTouched()) {
-//            System.out.println(Gdx.input.getX() + ", " +
-//                              (Gdx.input.getY()) + ", " +
-//                               (MyGdxGame.SCREEN_HEIGHT - Gdx.input.getY()));
             System.out.println(
                     (touch.x) + ", " +
-                    (touch.y));
+                    (touch.y)
+            );
+            System.out.println(
+                    "!!! " + worldTouch.x + ", " + worldTouch.y
+            );
        }
 
         //Обновление камеры
@@ -160,5 +161,6 @@ public class GameScreen implements Screen {
                 Gdx.input.getX() - gameViewport.getScreenX(),
                 gameViewport.getScreenHeight() - Gdx.input.getY() + gameViewport.getScreenY()
         );
+        worldTouch = gameViewport.unproject(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
     }
 }
