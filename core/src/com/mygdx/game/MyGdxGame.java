@@ -22,7 +22,7 @@ public class MyGdxGame extends Game {
 	public static float SCREEN_WIDTH;
 	public static float SCREEN_HEIGHT;
 	SpriteBatch batch;
-	OrthographicCamera camera = new OrthographicCamera();
+	OrthographicCamera camera = new OrthographicCamera(), hudCamera = new OrthographicCamera();
 	GameScreen gameScreen;
 
 	@Override
@@ -30,9 +30,10 @@ public class MyGdxGame extends Game {
 		SCREEN_WIDTH = Gdx.graphics.getWidth();
 		SCREEN_HEIGHT = Gdx.graphics.getHeight();
 		camera.setToOrtho(false, WIDTH, HEIGHT);
+		hudCamera.setToOrtho(false, WIDTH, HEIGHT);
 
 		batch = new SpriteBatch();
-		gameScreen = new GameScreen(batch, camera);
+		gameScreen = new GameScreen(batch, camera, hudCamera);
 		setScreen(gameScreen);
 	}
 

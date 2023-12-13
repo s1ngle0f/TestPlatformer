@@ -3,23 +3,23 @@ package com.mygdx.game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
-public class Joystick {
-    private SpriteBatch batch;
+public class Joystick extends Actor {
     private OrthographicCamera camera;
     private Texture bgCircle, fgTexture;
     private float bgCircleSize, fgTextureSize, currentLength;
     private boolean isStatic = false, isTouchedInsideCircle = false;
     private Vector2 centerPosition = new Vector2(), activeCenterPosition = new Vector2();
-    private Vector2 leftBottomPointOfCamera = new Vector2(), result = new Vector2();
+    private Vector2 result = new Vector2();
     private FitViewport gameViewport;
 
-    public Joystick(FitViewport gameViewport, SpriteBatch batch, OrthographicCamera camera, Texture bgCircle, Texture fgTexture, float bgCircleSize, float fgTextureSize) {
+    public Joystick(FitViewport gameViewport, OrthographicCamera camera, Texture bgCircle, Texture fgTexture, float bgCircleSize, float fgTextureSize) {
         this.gameViewport = gameViewport;
-        this.batch = batch;
         this.camera = camera;
         this.bgCircle = bgCircle;
         this.fgTexture = fgTexture;
@@ -27,20 +27,21 @@ public class Joystick {
         this.fgTextureSize = fgTextureSize;
     }
 
-    public void render(float delta){
+    @Override
+    public void draw(Batch batch, float parentAlpha){
         calculatePosition();
         editResult();
 //        System.out.println(result);
         if(isStatic || Gdx.input.isTouched()){
             batch.draw( bgCircle,
-                    leftBottomPointOfCamera.x + centerPosition.x - bgCircleSize/2f,
-                    leftBottomPointOfCamera.y + centerPosition.y - bgCircleSize/2f,
+                    centerPosition.x - bgCircleSize/2f,
+                    centerPosition.y - bgCircleSize/2f,
                     bgCircleSize,
                     bgCircleSize
             );
             batch.draw( fgTexture,
-                    leftBottomPointOfCamera.x + activeCenterPosition.x - fgTextureSize/2f,
-                    leftBottomPointOfCamera.y + activeCenterPosition.y - fgTextureSize/2f,
+                    activeCenterPosition.x - fgTextureSize/2f,
+                    activeCenterPosition.y - fgTextureSize/2f,
                     fgTextureSize,
                     fgTextureSize
             );
@@ -56,10 +57,6 @@ public class Joystick {
     }
 
     private void calculatePosition() {
-        leftBottomPointOfCamera.set(
-                camera.position.x - camera.viewportWidth/2f,
-                camera.position.y - camera.viewportHeight/2f
-        );
         if(isStatic) {
             centerPosition.set(
                     bgCircleSize + 3,

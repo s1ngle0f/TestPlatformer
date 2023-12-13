@@ -26,7 +26,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 public class GameScreen implements Screen {
     private static final float unitScale = 0.1f;
     private final SpriteBatch batch;
-    private final OrthographicCamera camera;
+    private final OrthographicCamera camera, hudCamera;
     private FitViewport gameViewport;
     private FitViewport hudViewport;
     private Stage hudStage;
@@ -41,12 +41,15 @@ public class GameScreen implements Screen {
 
     Texture deleteLater;
 
-    public GameScreen(SpriteBatch batch, OrthographicCamera camera) {
+    public GameScreen(SpriteBatch batch, OrthographicCamera camera, OrthographicCamera hudCamera) {
         this.batch = batch;
         this.camera = camera;
+        this.hudCamera = hudCamera;
 
         gameViewport = new FitViewport(MyGdxGame.WIDTH, MyGdxGame.HEIGHT, camera);
-        hudViewport = new FitViewport(MyGdxGame.WIDTH, MyGdxGame.HEIGHT, camera);
+        hudViewport = new FitViewport(MyGdxGame.WIDTH, MyGdxGame.HEIGHT, hudCamera);
+        hudStage = new Stage(hudViewport, batch);
+
         deleteLater= new Texture("badlogic.jpg");
         tmxMapLoader = new TmxMapLoader();
         map = tmxMapLoader.load("tilemaps/example.tmx");
@@ -82,8 +85,9 @@ public class GameScreen implements Screen {
                 gameViewport.getScreenHeight() - Gdx.input.getY() + gameViewport.getScreenY()
         );
 
-        joystick = new Joystick(gameViewport, batch, camera, new Texture("bgJoystick.png"),
+        joystick = new Joystick(hudViewport, hudCamera, new Texture("bgJoystick.png"),
                 new Texture("fgStick.png"), 20, 6);
+        hudStage.addActor(joystick);
     }
 
     @Override
@@ -116,13 +120,15 @@ public class GameScreen implements Screen {
             );
        }
 
-        batch.begin();
-//        batch.draw(deleteLater, 0, 0, MyGdxGame.WIDTH, MyGdxGame.HEIGHT);
-        joystick.render(delta);
-        batch.end();
+        camera.position.add(
+                joystick.getResult().x/3f,
+                joystick.getResult().y/3f,
+                0
+        );
 
         //Обновление камеры
         camera.update();
+        hudCamera.update();
 
         //Для отображения объектов через batch.begin() batch.end()
         batch.setProjectionMatrix(camera.combined);
@@ -133,6 +139,9 @@ public class GameScreen implements Screen {
 
         //Отвечает за отрисовку границ rectangle
         b2dr.render(world, camera.combined);
+
+        hudStage.act(delta);
+        hudStage.draw();
 
         //Физическая симуляция мира
         world.step(1/160f, 6, 2);
