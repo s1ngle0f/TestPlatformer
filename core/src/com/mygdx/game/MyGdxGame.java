@@ -19,12 +19,18 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 public class MyGdxGame extends Game {
 	public static float WIDTH = 1920/(2f * 10);
 	public static float HEIGHT = 1080/(2f * 10);
+	public static float SCREEN_WIDTH;
+	public static float SCREEN_HEIGHT;
 	SpriteBatch batch;
 	OrthographicCamera camera = new OrthographicCamera();
 	GameScreen gameScreen;
 
 	@Override
 	public void create () {
+		SCREEN_WIDTH = Gdx.graphics.getWidth();
+		SCREEN_HEIGHT = Gdx.graphics.getHeight();
+		camera.setToOrtho(false, WIDTH, HEIGHT);
+
 		batch = new SpriteBatch();
 		gameScreen = new GameScreen(batch, camera);
 		setScreen(gameScreen);

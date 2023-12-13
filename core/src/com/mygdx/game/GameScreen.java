@@ -36,6 +36,7 @@ public class GameScreen implements Screen {
     private Box2DDebugRenderer b2dr;
     private World world;
     private Player player;
+    private Vector2 touch;
 
     public GameScreen(SpriteBatch batch, OrthographicCamera camera) {
         this.batch = batch;
@@ -61,7 +62,8 @@ public class GameScreen implements Screen {
             Rectangle rect = ((RectangleMapObject) object).getRectangle();
 
             bodyDef.type = BodyDef.BodyType.StaticBody;
-            bodyDef.position.set((rect.x + rect.getWidth()/2) * unitScale, (rect.y + rect.getHeight()/2) * unitScale);
+            bodyDef.position.set((rect.x + rect.getWidth()/2) * unitScale,
+                    (rect.y + rect.getHeight()/2) * unitScale);
 
             body = world.createBody(bodyDef);
 
@@ -71,6 +73,11 @@ public class GameScreen implements Screen {
         }
 
         player = new Player(world, batch, new Texture("badlogic.jpg"));
+
+        touch = new Vector2(
+                Gdx.input.getX() - gameViewport.getScreenX(),
+                gameViewport.getScreenHeight() - Gdx.input.getY() + gameViewport.getScreenY()
+        );
     }
 
     @Override
@@ -81,8 +88,7 @@ public class GameScreen implements Screen {
     @Override
     public void render(float delta) {
         ScreenUtils.clear(1,1,1,1);
-        //Обновление камеры
-        camera.update();
+        updateTouch();
 
         if(Gdx.input.isKeyJustPressed(Input.Keys.W)){
             player.body.applyLinearImpulse(new Vector2(0, 700000),
@@ -94,6 +100,17 @@ public class GameScreen implements Screen {
         if(Gdx.input.isKeyPressed(Input.Keys.A)){
             player.body.applyForceToCenter(new Vector2(-3000, 0), true);
         }
+        if(Gdx.input.isTouched()) {
+//            System.out.println(Gdx.input.getX() + ", " +
+//                              (Gdx.input.getY()) + ", " +
+//                               (MyGdxGame.SCREEN_HEIGHT - Gdx.input.getY()));
+            System.out.println(
+                    (touch.x) + ", " +
+                    (touch.y));
+       }
+
+        //Обновление камеры
+        camera.update();
 
         //Для отображения объектов через batch.begin() batch.end()
         batch.setProjectionMatrix(camera.combined);
@@ -114,6 +131,8 @@ public class GameScreen implements Screen {
 		gameViewport.update(width, height, true);
 		hudViewport.update(width, height, true);
 		camera.position.set(camera.viewportWidth / 2f, camera.viewportHeight / 2f, 0);
+        MyGdxGame.SCREEN_WIDTH = gameViewport.getScreenWidth();
+        MyGdxGame.SCREEN_HEIGHT = gameViewport.getScreenHeight();
     }
 
     @Override
@@ -134,5 +153,12 @@ public class GameScreen implements Screen {
     @Override
     public void dispose() {
 
+    }
+
+    private void updateTouch(){
+        touch.set(
+                Gdx.input.getX() - gameViewport.getScreenX(),
+                gameViewport.getScreenHeight() - Gdx.input.getY() + gameViewport.getScreenY()
+        );
     }
 }
