@@ -1,6 +1,8 @@
 package com.mygdx.game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -13,12 +15,105 @@ public class Joystick extends Actor {
     private OrthographicCamera camera;
     private Texture bgCircle, fgTexture;
     private float bgCircleSize, fgTextureSize, currentLength;
-    private boolean isStatic = false, isTouchedInsideCircle = false;
+    private boolean isStatic = true, isTouchedInsideCircle = false;
     private Vector2 centerPosition = new Vector2(), activeCenterPosition = new Vector2();
     private Vector2 result = new Vector2();
     private FitViewport gameViewport;
-    private float defaultX = 3, defaultY = 3;
+    private float defaultX = 15, defaultY = 15;
+    private boolean isTouched = false;
+    private InputProcessor inputProcessor = new InputProcessor() {
+        @Override
+        public boolean keyDown(int keycode) {
+            return false;
+        }
 
+        @Override
+        public boolean keyUp(int keycode) {
+            return false;
+        }
+
+        @Override
+        public boolean keyTyped(char character) {
+            return false;
+        }
+        @Override
+        public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+            if(pointer == 0){
+                if (isStatic) {
+                    centerPosition.set(
+                            defaultX,
+                            defaultY
+                    );
+                }else if (screenX <= MyGdxGame.SCREEN_WIDTH/2) {
+                    centerPosition.set(
+                            gameViewport.unproject(
+                                    new Vector2(
+                                            (screenX),
+                                            (screenY)
+                                    )
+                            )
+                    );
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+            if(pointer == 0)
+                resetResult();
+            return false;
+        }
+
+        @Override
+        public boolean touchCancelled(int screenX, int screenY, int pointer, int button) {
+            return false;
+        }
+
+        @Override
+        public boolean touchDragged(int screenX, int screenY, int pointer) {
+            if(pointer == 0){
+                if (isStatic) {
+                    if (new Vector2(
+                            gameViewport.unproject(
+                                    new Vector2(
+                                            (screenX),
+                                            (screenY)
+                                    )
+                            )
+                    ).sub(
+                            centerPosition.x,
+                            centerPosition.y
+                    ).len() <= bgCircleSize / 2f) {
+                        isTouchedInsideCircle = true;
+                    }
+                }
+                if((!isStatic || isTouchedInsideCircle)
+                        && screenX <= MyGdxGame.SCREEN_WIDTH/2){
+                    activeCenterPosition.set(
+                            gameViewport.unproject(
+                                    new Vector2(
+                                            (screenX),
+                                            (screenY)
+                                    )
+                            )
+                    );
+                }
+                activeCenterPosition = limitVector(centerPosition, activeCenterPosition, bgCircleSize/2f);
+            }
+            return false;
+        }
+
+        @Override
+        public boolean mouseMoved(int screenX, int screenY) {
+            return false;
+        }
+
+        @Override
+        public boolean scrolled(float amountX, float amountY) {
+            return false;
+        }
+    };
     public Joystick(FitViewport gameViewport, OrthographicCamera camera, Texture bgCircle, Texture fgTexture, float bgCircleSize, float fgTextureSize) {
         this.gameViewport = gameViewport;
         this.camera = camera;
@@ -26,6 +121,8 @@ public class Joystick extends Actor {
         this.fgTexture = fgTexture;
         this.bgCircleSize = bgCircleSize;
         this.fgTextureSize = fgTextureSize;
+
+        Gdx.input.setInputProcessor(inputProcessor);
     }
 
     public void setDefaultPosition(float x, float y){
@@ -35,10 +132,9 @@ public class Joystick extends Actor {
 
     @Override
     public void draw(Batch batch, float parentAlpha){
-        calculatePosition();
+//        calculatePosition();
         editResult();
         if(isStatic || Gdx.input.isTouched()){
-            if(Gdx.input.getX() <= MyGdxGame.SCREEN_WIDTH/2){
                 batch.draw(bgCircle,
                         centerPosition.x - bgCircleSize / 2f,
                         centerPosition.y - bgCircleSize / 2f,
@@ -51,10 +147,9 @@ public class Joystick extends Actor {
                         fgTextureSize,
                         fgTextureSize
                 );
-            }
         }
-        if(!Gdx.input.isTouched() && result.x != 0 && result.y != 0)
-            resetResult();
+//        if(!Gdx.input.isTouched() && result.x != 0 && result.y != 0)
+//            resetResult();
     }
 
     private void resetResult() {
@@ -97,7 +192,7 @@ public class Joystick extends Actor {
                 isTouchedInsideCircle = true;
             }
         }
-        else if (Gdx.input.justTouched() && Gdx.input.getX() <= MyGdxGame.SCREEN_WIDTH/2) {
+        else if (Gdx.input.justTouched() && Gdx.input.getX() <= MyGdxGame.SCREEN_WIDTH/2 && !isTouched) {
             centerPosition.set(
                     gameViewport.unproject(
                             new Vector2(
@@ -107,7 +202,7 @@ public class Joystick extends Actor {
                     )
             );
         }
-        if(Gdx.input.isTouched() && (!isStatic || isTouchedInsideCircle)
+        if(Gdx.input.isTouched() && (!isStatic || isTouchedInsideCircle) && !isTouched
                 && Gdx.input.getX() <= MyGdxGame.SCREEN_WIDTH/2){
             activeCenterPosition.set(
                     gameViewport.unproject(

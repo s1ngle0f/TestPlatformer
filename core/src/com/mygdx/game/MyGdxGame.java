@@ -25,6 +25,13 @@ public class MyGdxGame extends Game {
 	OrthographicCamera camera = new OrthographicCamera(), hudCamera = new OrthographicCamera();
 	GameScreen gameScreen;
 
+	public static MyGdxGame instance;
+
+	public MyGdxGame(){
+		super();
+		instance = this;
+	}
+
 	@Override
 	public void create () {
 		SCREEN_WIDTH = Gdx.graphics.getWidth();
