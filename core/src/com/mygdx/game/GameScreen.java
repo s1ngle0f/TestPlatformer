@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
@@ -19,6 +20,8 @@ import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
+import com.badlogic.gdx.physics.box2d.Filter;
+import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
@@ -51,6 +54,8 @@ public class GameScreen implements Screen {
     private final HashMap<String, BackgroundCircle> parallaxBg = new HashMap<>();
     Texture deleteLater;
 
+    List<Body> ground = new ArrayList<>();
+    List<Body> bodyForDelete = new ArrayList<>();
     public GameScreen(SpriteBatch batch, OrthographicCamera camera, OrthographicCamera hudCamera) {
         this.batch = batch;
         this.camera = camera;
@@ -65,16 +70,51 @@ public class GameScreen implements Screen {
         map = tmxMapLoader.load("tilemaps/example.tmx");
         renderer = new OrthogonalTiledMapRenderer(map, unitScale, batch);
 
+        TiledMapTileLayer layer = (TiledMapTileLayer) map.getLayers().get(0);
+        TiledMapTileLayer.Cell cell = layer.getCell(0, 0);
+
+        if (cell != null) {
+            layer.setCell(0, 0, null);
+        }
+
         world = new World(new Vector2(0, -3600), true);
+
+        world.setContactListener(new ContactListener() {
+            @Override
+            public void beginContact(Contact contact) {
+//                System.out.println("A Body: " + contact.getFixtureA().getBody());
+//                System.out.println("B Body: " + contact.getFixtureB().getBody());
+                if(contact.getFixtureB().getBody() == player.body && ground.contains(contact.getFixtureA().getBody()))
+                    if(world != null) {
+                        ground.remove(contact.getFixtureA().getBody());
+                        bodyForDelete.add(contact.getFixtureA().getBody());
+                    }
+            }
+
+            @Override
+            public void endContact(Contact contact) {
+
+            }
+
+            @Override
+            public void preSolve(Contact contact, Manifold oldManifold) {
+
+            }
+
+            @Override
+            public void postSolve(Contact contact, ContactImpulse impulse) {
+
+            }
+        });
 
         BodyDef bodyDef = new BodyDef();
         PolygonShape shape = new PolygonShape();
         FixtureDef fixtureDef = new FixtureDef();
-        Body body;
 
         b2dr = new Box2DDebugRenderer();
 
         for(MapObject object : map.getLayers().get(1).getObjects().getByType(RectangleMapObject.class)){
+            Body body;
             Rectangle rect = ((RectangleMapObject) object).getRectangle();
 
             bodyDef.type = BodyDef.BodyType.StaticBody;
@@ -86,9 +126,12 @@ public class GameScreen implements Screen {
             shape.setAsBox(rect.getWidth()/2*unitScale, rect.getHeight()/2*unitScale);
             fixtureDef.shape = shape;
             body.createFixture(fixtureDef);
+
+            ground.add(body);
         }
 
         player = new Player(world, batch, deleteLater);
+        System.out.println("Player: " + player.body);
 
         touch = new Vector2(
                 Gdx.input.getX() - gameViewport.getScreenX(),
@@ -183,8 +226,18 @@ public class GameScreen implements Screen {
         hudStage.act(delta);
         hudStage.draw();
 
+        deleteBodies();
         //Физическая симуляция мира
         world.step(1/160f, 6, 2);
+
+    }
+
+    private void deleteBodies() {
+        for(Body body : bodyForDelete){
+            if(!world.isLocked())
+                world.destroyBody(body);
+        }
+        bodyForDelete.clear();
     }
 
     private void moveCamera() {

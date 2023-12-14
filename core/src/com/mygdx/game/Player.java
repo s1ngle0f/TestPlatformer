@@ -33,7 +33,6 @@ public class Player extends Sprite {
         shape.setAsBox(5, 5);
         fixtureDef.shape = shape;
         fixtureDef.friction = 0.95f;
-        fixtureDef.density = 0;
         body.createFixture(fixtureDef);
     }
 

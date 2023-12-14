@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.10.2" orientation="orthogonal" renderorder="right-down" width="15" height="7" tilewidth="25" tileheight="25" infinite="0" nextlayerid="3" nextobjectid="3">
+ <tileset firstgid="1" source="props2.tsx"/>
+ <layer id="1" name="gr" width="15" height="7">
+  <data encoding="csv">
+38,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+38,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+38,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+38,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+38,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,
+38,38,38,38,38,38,38,38,38,38,38,38,38,38,38
+</data>
+ </layer>
+ <objectgroup id="2" name="env">
+  <object id="1" x="0" y="0" width="25" height="175"/>
+  <object id="2" x="25" y="125" width="350" height="50"/>
+ </objectgroup>
+</map>

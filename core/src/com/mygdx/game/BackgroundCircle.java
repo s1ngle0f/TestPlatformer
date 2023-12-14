@@ -40,10 +40,6 @@ public class BackgroundCircle {
                     width,
                     height
             );
-            if(i == 0) {
-                System.out.println(leftBottomPointCamera + " " + startPoint);
-                System.out.println("- " + (startPoint + i * width + (leftBottomPointCamera * parallaxKoef) % width));
-            }
         }
 //        System.out.println("Start point: " + startPoint + "; Position: " + (((int)(camera.position.x) - MyGdxGame.WIDTH/2)));
     }
