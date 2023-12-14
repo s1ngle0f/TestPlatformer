@@ -147,10 +147,10 @@ public class GameScreen implements Screen {
         }
         moveCamera();
         if(Gdx.input.isTouched()) {
-            System.out.println(
-                    (touch.x) + ", " +
-                    (touch.y)
-            );
+//            System.out.println(
+//                    (touch.x) + ", " +
+//                    (touch.y)
+//            );
             System.out.println(
                     "!!! " + worldTouch.x + ", " + worldTouch.y
             );
@@ -162,16 +162,16 @@ public class GameScreen implements Screen {
                 0
         );
 
-        batch.begin();
-        renderBackground(delta);
-        batch.end();
-
         //Обновление камеры
         camera.update();
         hudCamera.update();
 
         //Для отображения объектов через batch.begin() batch.end()
         batch.setProjectionMatrix(camera.combined);
+
+        batch.begin();
+        renderBackground(delta);
+        batch.end();
 
         //Отображение карты
         renderer.setView(camera);
