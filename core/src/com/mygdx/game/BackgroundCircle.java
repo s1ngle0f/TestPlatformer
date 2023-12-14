@@ -36,7 +36,7 @@ public class BackgroundCircle {
         for(int i = 0; i < n; i++) {
             batch.draw(background,
                     startPoint + i * width + (leftBottomPointCamera * parallaxKoef) % width,
-                    0,
+                    (camera.position.y) - (MyGdxGame.HEIGHT)/2f,
                     width,
                     height
             );

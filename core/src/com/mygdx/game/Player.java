@@ -13,6 +13,7 @@ import com.badlogic.gdx.physics.box2d.World;
 public class Player extends Sprite {
     private World world;
     public Body body;
+    public BodyDef bodyDef;
     private Texture texture;
     private SpriteBatch batch;
     public Player(World world, SpriteBatch batch, Texture texture){
@@ -23,7 +24,7 @@ public class Player extends Sprite {
     }
 
     private void definePlayer() {
-        BodyDef bodyDef = new BodyDef();
+        bodyDef = new BodyDef();
         bodyDef.position.set(new Vector2(10, 10));
         bodyDef.type = BodyDef.BodyType.DynamicBody;
         body = world.createBody(bodyDef);

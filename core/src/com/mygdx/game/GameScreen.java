@@ -35,7 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class GameScreen implements Screen {
-    private static final float unitScale = 0.1f;
+    private static final float unitScale = 0.225f;
     private final SpriteBatch batch;
     private final OrthographicCamera camera, hudCamera;
     private FitViewport gameViewport;
@@ -67,7 +67,7 @@ public class GameScreen implements Screen {
 
         deleteLater= new Texture("badlogic.jpg");
         tmxMapLoader = new TmxMapLoader();
-        map = tmxMapLoader.load("tilemaps/example.tmx");
+        map = tmxMapLoader.load("TMS/jo.tmx");
         renderer = new OrthogonalTiledMapRenderer(map, unitScale, batch);
 
         TiledMapTileLayer layer = (TiledMapTileLayer) map.getLayers().get(0);
@@ -82,8 +82,6 @@ public class GameScreen implements Screen {
         world.setContactListener(new ContactListener() {
             @Override
             public void beginContact(Contact contact) {
-//                System.out.println("A Body: " + contact.getFixtureA().getBody());
-//                System.out.println("B Body: " + contact.getFixtureB().getBody());
                 if(contact.getFixtureB().getBody() == player.body && ground.contains(contact.getFixtureA().getBody()))
                     if(world != null) {
                         ground.remove(contact.getFixtureA().getBody());
@@ -113,7 +111,7 @@ public class GameScreen implements Screen {
 
         b2dr = new Box2DDebugRenderer();
 
-        for(MapObject object : map.getLayers().get(1).getObjects().getByType(RectangleMapObject.class)){
+        for(MapObject object : map.getLayers().get(3).getObjects().getByType(RectangleMapObject.class)){
             Body body;
             Rectangle rect = ((RectangleMapObject) object).getRectangle();
 
@@ -130,9 +128,7 @@ public class GameScreen implements Screen {
             ground.add(body);
         }
 
-        player = new Player(world, batch, deleteLater);
-        System.out.println("Player: " + player.body);
-
+        startConfig();
         touch = new Vector2(
                 Gdx.input.getX() - gameViewport.getScreenX(),
                 gameViewport.getScreenHeight() - Gdx.input.getY() + gameViewport.getScreenY()
@@ -143,6 +139,32 @@ public class GameScreen implements Screen {
         hudStage.addActor(joystick);
 
         initBackground();
+    }
+
+    private void startConfig() {
+        Vector2 startPos = new Vector2(156, 264);
+        player = new Player(world, batch, deleteLater);
+        player.body.setTransform(startPos, player.body.getAngle());
+        camera.position.set(player.body.getPosition().x, player.body.getPosition().y, 0);
+        System.out.println("Player: " + player.body);
+    }
+
+    private void correctCamera(){
+        float cameraSpeed = 2f;
+        float xDirection = player.body.getPosition().x - camera.position.x;
+        float yDirection = player.body.getPosition().y - camera.position.y;
+        if(Math.abs(xDirection) > MyGdxGame.WIDTH/2 * 0.4f){
+            if(xDirection > 0)
+                camera.position.add(cameraSpeed, 0, 0);
+            else
+                camera.position.add(-cameraSpeed, 0, 0);
+        }
+        if(Math.abs(yDirection) > MyGdxGame.HEIGHT/2 * 0.42f){
+            if(yDirection > 0)
+                camera.position.add(0, cameraSpeed, 0);
+            else
+                camera.position.add(0, -cameraSpeed, 0);
+        }
     }
 
     public void renderBackground(float delta){
@@ -195,15 +217,16 @@ public class GameScreen implements Screen {
 //                    (touch.y)
 //            );
             System.out.println(
-                    "!!! " + worldTouch.x + ", " + worldTouch.y
+                    "! " + worldTouch.x + ", " + worldTouch.y
             );
        }
 
-        camera.position.add(
-                joystick.getResult().x/3f,
-                joystick.getResult().y/3f,
-                0
-        );
+//        camera.position.add(
+//                joystick.getResult().x/3f,
+//                joystick.getResult().y/3f,
+//                0
+//        );
+        correctCamera();
 
         //Обновление камеры
         camera.update();
@@ -226,7 +249,7 @@ public class GameScreen implements Screen {
         hudStage.act(delta);
         hudStage.draw();
 
-        deleteBodies();
+//        deleteBodies();
         //Физическая симуляция мира
         world.step(1/160f, 6, 2);
 
@@ -249,9 +272,10 @@ public class GameScreen implements Screen {
     public void resize(int width, int height) {
 		gameViewport.update(width, height, true);
 		hudViewport.update(width, height, true);
-		camera.position.set(camera.viewportWidth / 2f, camera.viewportHeight / 2f, 0);
+//		camera.position.set(camera.viewportWidth / 2f, camera.viewportHeight / 2f, 0);
         MyGdxGame.SCREEN_WIDTH = gameViewport.getScreenWidth();
         MyGdxGame.SCREEN_HEIGHT = gameViewport.getScreenHeight();
+        camera.position.set(player.body.getPosition().x, player.body.getPosition().y, 0);
     }
 
     @Override
