@@ -16,12 +16,20 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
+import com.badlogic.gdx.physics.box2d.Contact;
+import com.badlogic.gdx.physics.box2d.ContactImpulse;
+import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class GameScreen implements Screen {
     private static final float unitScale = 0.1f;
@@ -39,6 +47,8 @@ public class GameScreen implements Screen {
     private Vector2 touch, worldTouch;
     private Joystick joystick;
 
+    private Texture sky, rock1, rock2, clouds1, clouds2, clouds3, clouds4;
+    private final HashMap<String, BackgroundCircle> parallaxBg = new HashMap<>();
     Texture deleteLater;
 
     public GameScreen(SpriteBatch batch, OrthographicCamera camera, OrthographicCamera hudCamera) {
@@ -88,6 +98,31 @@ public class GameScreen implements Screen {
         joystick = new Joystick(hudViewport, hudCamera, new Texture("bgJoystick.png"),
                 new Texture("fgStick.png"), 20, 6);
         hudStage.addActor(joystick);
+
+        initBackground();
+    }
+
+    public void renderBackground(float delta){
+        for (BackgroundCircle bgCircle : parallaxBg.values()) {
+            bgCircle.render(delta);
+        }
+    }
+
+    private void initBackground() {
+        sky = new Texture("background/sky.png");
+        rock1 = new Texture("background/rocks_1.png");
+        rock2 = new Texture("background/rocks_2.png");
+        clouds1 = new Texture("background/clouds_1.png");
+        clouds2 = new Texture("background/clouds_2.png");
+        clouds3 = new Texture("background/clouds_3.png");
+        clouds4 = new Texture("background/clouds_4.png");
+        parallaxBg.put("skyBg", new BackgroundCircle(sky, batch, camera, 0));
+        parallaxBg.put("rock1Bg", new BackgroundCircle(rock1, batch, camera, 0));
+        parallaxBg.put("rock2Bg", new BackgroundCircle(rock2, batch, camera, -0.03f));
+        parallaxBg.put("clouds1Bg", new BackgroundCircle(clouds1, batch, camera, 0.1f));
+        parallaxBg.put("clouds2Bg", new BackgroundCircle(clouds2, batch, camera, -0.13f));
+        parallaxBg.put("clouds3Bg", new BackgroundCircle(clouds3, batch, camera, -0.15f));
+        parallaxBg.put("clouds4Bg", new BackgroundCircle(clouds4, batch, camera, -0.17f));
     }
 
     @Override
@@ -110,6 +145,7 @@ public class GameScreen implements Screen {
         if(Gdx.input.isKeyPressed(Input.Keys.A)){
             player.body.applyForceToCenter(new Vector2(-3000, 0), true);
         }
+        moveCamera();
         if(Gdx.input.isTouched()) {
             System.out.println(
                     (touch.x) + ", " +
@@ -125,6 +161,10 @@ public class GameScreen implements Screen {
                 joystick.getResult().y/3f,
                 0
         );
+
+        batch.begin();
+        renderBackground(delta);
+        batch.end();
 
         //Обновление камеры
         camera.update();
@@ -145,6 +185,11 @@ public class GameScreen implements Screen {
 
         //Физическая симуляция мира
         world.step(1/160f, 6, 2);
+    }
+
+    private void moveCamera() {
+        if(Gdx.input.isKeyPressed(Input.Keys.RIGHT))
+            camera.position.add(1, 0, 0);
     }
 
     @Override
