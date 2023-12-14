@@ -38,18 +38,20 @@ public class Joystick extends Actor {
         calculatePosition();
         editResult();
         if(isStatic || Gdx.input.isTouched()){
-            batch.draw( bgCircle,
-                    centerPosition.x - bgCircleSize/2f,
-                    centerPosition.y - bgCircleSize/2f,
-                    bgCircleSize,
-                    bgCircleSize
-            );
-            batch.draw( fgTexture,
-                    activeCenterPosition.x - fgTextureSize/2f,
-                    activeCenterPosition.y - fgTextureSize/2f,
-                    fgTextureSize,
-                    fgTextureSize
-            );
+            if(Gdx.input.getX() <= MyGdxGame.SCREEN_WIDTH/2){
+                batch.draw(bgCircle,
+                        centerPosition.x - bgCircleSize / 2f,
+                        centerPosition.y - bgCircleSize / 2f,
+                        bgCircleSize,
+                        bgCircleSize
+                );
+                batch.draw(fgTexture,
+                        activeCenterPosition.x - fgTextureSize / 2f,
+                        activeCenterPosition.y - fgTextureSize / 2f,
+                        fgTextureSize,
+                        fgTextureSize
+                );
+            }
         }
         if(!Gdx.input.isTouched() && result.x != 0 && result.y != 0)
             resetResult();
@@ -95,7 +97,7 @@ public class Joystick extends Actor {
                 isTouchedInsideCircle = true;
             }
         }
-        else if (Gdx.input.justTouched()) {
+        else if (Gdx.input.justTouched() && Gdx.input.getX() <= MyGdxGame.SCREEN_WIDTH/2) {
             centerPosition.set(
                     gameViewport.unproject(
                             new Vector2(
@@ -105,7 +107,8 @@ public class Joystick extends Actor {
                     )
             );
         }
-        if(Gdx.input.isTouched() && (!isStatic || isTouchedInsideCircle)){
+        if(Gdx.input.isTouched() && (!isStatic || isTouchedInsideCircle)
+                && Gdx.input.getX() <= MyGdxGame.SCREEN_WIDTH/2){
             activeCenterPosition.set(
                     gameViewport.unproject(
                             new Vector2(
