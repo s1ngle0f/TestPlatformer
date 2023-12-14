@@ -30,6 +30,8 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
+import org.w3c.dom.css.Rect;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -55,7 +57,10 @@ public class GameScreen implements Screen {
     Texture deleteLater;
 
     List<Body> ground = new ArrayList<>();
+    List<Body> coins = new ArrayList<>();
+    HashMap<Body, Rectangle> coinsRect = new HashMap<>();
     List<Body> bodyForDelete = new ArrayList<>();
+    private TiledMapTileLayer coinLayer;
     public GameScreen(SpriteBatch batch, OrthographicCamera camera, OrthographicCamera hudCamera) {
         this.batch = batch;
         this.camera = camera;
@@ -70,21 +75,16 @@ public class GameScreen implements Screen {
         map = tmxMapLoader.load("TMS/jo.tmx");
         renderer = new OrthogonalTiledMapRenderer(map, unitScale, batch);
 
-        TiledMapTileLayer layer = (TiledMapTileLayer) map.getLayers().get(0);
-        TiledMapTileLayer.Cell cell = layer.getCell(0, 0);
-
-        if (cell != null) {
-            layer.setCell(0, 0, null);
-        }
+        coinLayer = (TiledMapTileLayer) map.getLayers().get("coin");
 
         world = new World(new Vector2(0, -3600), true);
 
         world.setContactListener(new ContactListener() {
             @Override
             public void beginContact(Contact contact) {
-                if(contact.getFixtureB().getBody() == player.body && ground.contains(contact.getFixtureA().getBody()))
+                if(contact.getFixtureB().getBody() == player.body && coins.contains(contact.getFixtureA().getBody()))
                     if(world != null) {
-                        ground.remove(contact.getFixtureA().getBody());
+                        coins.remove(contact.getFixtureA().getBody());
                         bodyForDelete.add(contact.getFixtureA().getBody());
                     }
             }
@@ -128,6 +128,8 @@ public class GameScreen implements Screen {
             ground.add(body);
         }
 
+        initCoinsBody(bodyDef, shape, fixtureDef);
+
         startConfig();
         touch = new Vector2(
                 Gdx.input.getX() - gameViewport.getScreenX(),
@@ -141,8 +143,28 @@ public class GameScreen implements Screen {
         initBackground();
     }
 
+    private void initCoinsBody(BodyDef bodyDef, PolygonShape shape, FixtureDef fixtureDef) {
+        for(MapObject object : map.getLayers().get(5).getObjects().getByType(RectangleMapObject.class)){
+            Body body;
+            Rectangle rect = ((RectangleMapObject) object).getRectangle();
+
+            bodyDef.type = BodyDef.BodyType.StaticBody;
+            bodyDef.position.set((rect.x + rect.getWidth()/2) * unitScale,
+                    (rect.y + rect.getHeight()/2) * unitScale);
+
+            body = world.createBody(bodyDef);
+
+            shape.setAsBox(rect.getWidth()/2*unitScale, rect.getHeight()/2*unitScale);
+            fixtureDef.shape = shape;
+            body.createFixture(fixtureDef);
+
+            coins.add(body);
+            coinsRect.put(body, rect);
+        }
+    }
+
     private void startConfig() {
-        Vector2 startPos = new Vector2(156, 264);
+        Vector2 startPos = new Vector2(365, 374);
         player = new Player(world, batch, deleteLater);
         player.body.setTransform(startPos, player.body.getAngle());
         camera.position.set(player.body.getPosition().x, player.body.getPosition().y, 0);
@@ -159,7 +181,7 @@ public class GameScreen implements Screen {
             else
                 camera.position.add(-cameraSpeed, 0, 0);
         }
-        if(Math.abs(yDirection) > MyGdxGame.HEIGHT/2 * 0.42f){
+        if(Math.abs(yDirection) > MyGdxGame.HEIGHT/2 * 0.4f){
             if(yDirection > 0)
                 camera.position.add(0, cameraSpeed, 0);
             else
@@ -249,7 +271,7 @@ public class GameScreen implements Screen {
         hudStage.act(delta);
         hudStage.draw();
 
-//        deleteBodies();
+        deleteBodies();
         //Физическая симуляция мира
         world.step(1/160f, 6, 2);
 
@@ -257,8 +279,27 @@ public class GameScreen implements Screen {
 
     private void deleteBodies() {
         for(Body body : bodyForDelete){
-            if(!world.isLocked())
+            if(!world.isLocked()) {
                 world.destroyBody(body);
+
+                int mapHeightInTiles = map.getProperties().get("height", Integer.class);
+                int tilePixelHeight = map.getProperties().get("tileheight", Integer.class);
+                int mapHeightInPixels = mapHeightInTiles * tilePixelHeight;
+
+                Rectangle rect = coinsRect.get(body);
+                int tileX = (int) (rect.x)/tilePixelHeight;
+//                int tileY = (int) (Math.abs(tilePixelHeight - rect.y));
+                int tileY = (int) (rect.y)/tilePixelHeight;
+
+                TiledMapTileLayer.Cell cell = coinLayer.getCell(tileX, tileY);
+
+                if (cell != null) {
+                    coinLayer.setCell(tileX, tileY, null);
+                }else{
+                    System.out.println(tileX + " and " + tileY);
+                    System.out.println("Не та ячейка!");
+                }
+            }
         }
         bodyForDelete.clear();
     }
