@@ -33,7 +33,6 @@ public class MyGdxGame extends Game {
 
 	public MyGdxGame(){
 		super();
-		Gdx.input.setInputProcessor(inputMultiplexer);
 		instance = this;
 	}
 
@@ -48,6 +47,7 @@ public class MyGdxGame extends Game {
 		gameScreen = new GameScreen(batch, camera, hudCamera, this);
 		resultScreen = new ResultScreen(batch, camera);
 		setScreen(gameScreen);
+		Gdx.input.setInputProcessor(inputMultiplexer);
 	}
 
 //	@Override
