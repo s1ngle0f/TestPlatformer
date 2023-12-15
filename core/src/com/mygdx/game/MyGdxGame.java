@@ -3,6 +3,7 @@ package com.mygdx.game;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -28,9 +29,11 @@ public class MyGdxGame extends Game {
 	ResultScreen resultScreen;
 
 	public static MyGdxGame instance;
+	public static InputMultiplexer inputMultiplexer = new InputMultiplexer();
 
 	public MyGdxGame(){
 		super();
+		Gdx.input.setInputProcessor(inputMultiplexer);
 		instance = this;
 	}
 

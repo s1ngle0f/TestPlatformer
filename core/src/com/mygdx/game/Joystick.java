@@ -122,7 +122,7 @@ public class Joystick extends Actor {
         this.bgCircleSize = bgCircleSize;
         this.fgTextureSize = fgTextureSize;
 
-        Gdx.input.setInputProcessor(inputProcessor);
+        MyGdxGame.inputMultiplexer.addProcessor(inputProcessor);
     }
 
     public void setDefaultPosition(float x, float y){

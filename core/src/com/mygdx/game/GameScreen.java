@@ -181,7 +181,7 @@ public class GameScreen implements Screen {
         initBackground();
         enemy = new Enemy(world, player.body.getPosition().x - 10, player.body.getPosition().y);
 
-        Gdx.input.setInputProcessor(hudStage);
+        MyGdxGame.inputMultiplexer.addProcessor(hudStage);
     }
 
     private void initCoinsBody(BodyDef bodyDef, PolygonShape shape, FixtureDef fixtureDef) {
