@@ -21,6 +21,7 @@ public class Player extends Sprite {
         this.texture = texture;
         this.batch = batch;
         definePlayer();
+
     }
 
     private void definePlayer() {
@@ -38,4 +39,11 @@ public class Player extends Sprite {
     }
 
 
+    public void setUserData(String player) {
+        body.setUserData(player);
+    }
+
+    public void handleCollision() {
+        System.out.println("enemy detected!");
+    }
 }

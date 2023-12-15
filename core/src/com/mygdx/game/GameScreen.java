@@ -3,6 +3,7 @@ package com.mygdx.game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -28,6 +29,7 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.utils.TimeUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
 import org.w3c.dom.css.Rect;
@@ -37,6 +39,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class GameScreen implements Screen {
+    long startMills;
     private static final float unitScale = 0.225f;
     private final SpriteBatch batch;
     private final OrthographicCamera camera, hudCamera;
@@ -61,10 +64,21 @@ public class GameScreen implements Screen {
     HashMap<Body, Rectangle> coinsRect = new HashMap<>();
     List<Body> bodyForDelete = new ArrayList<>();
     private TiledMapTileLayer coinLayer;
-    public GameScreen(SpriteBatch batch, OrthographicCamera camera, OrthographicCamera hudCamera) {
+    private Enemy enemy;
+    Sound bruh, huh;
+
+    int direction = -1;
+    private MyGdxGame myGdxGame;
+
+
+    public GameScreen(SpriteBatch batch, OrthographicCamera camera, OrthographicCamera hudCamera, MyGdxGame myGdxGame) {
         this.batch = batch;
         this.camera = camera;
         this.hudCamera = hudCamera;
+        this.myGdxGame = myGdxGame;
+
+        bruh = Gdx.audio.newSound(Gdx.files.internal("TMS/bruh.mp3"));
+        huh = Gdx.audio.newSound(Gdx.files.internal("TMS/huh.mp3"));
 
         gameViewport = new FitViewport(MyGdxGame.WIDTH, MyGdxGame.HEIGHT, camera);
         hudViewport = new FitViewport(MyGdxGame.WIDTH, MyGdxGame.HEIGHT, hudCamera);
@@ -75,9 +89,12 @@ public class GameScreen implements Screen {
         map = tmxMapLoader.load("TMS/jo.tmx");
         renderer = new OrthogonalTiledMapRenderer(map, unitScale, batch);
 
+
         coinLayer = (TiledMapTileLayer) map.getLayers().get("coin");
 
         world = new World(new Vector2(0, -3600), true);
+        //enemy = new Enemy(world, 5, 10);
+
 
         world.setContactListener(new ContactListener() {
             @Override
@@ -87,6 +104,11 @@ public class GameScreen implements Screen {
                         coins.remove(contact.getFixtureA().getBody());
                         bodyForDelete.add(contact.getFixtureA().getBody());
                     }
+                if(contact.getFixtureB().getBody() == player.body && contact.getFixtureA().getBody() == enemy.getBody()){
+                        huh.play();
+                } else if(contact.getFixtureA().getBody() == player.body && contact.getFixtureB().getBody() == enemy.getBody()){
+                    bruh.play();
+                }
             }
 
             @Override
@@ -141,6 +163,7 @@ public class GameScreen implements Screen {
         hudStage.addActor(joystick);
 
         initBackground();
+        enemy = new Enemy(world, player.body.getPosition().x - 10, player.body.getPosition().y);
     }
 
     private void initCoinsBody(BodyDef bodyDef, PolygonShape shape, FixtureDef fixtureDef) {
@@ -214,7 +237,7 @@ public class GameScreen implements Screen {
 
     @Override
     public void show() {
-
+        startMills = TimeUtils.millis();
     }
 
     @Override
@@ -228,10 +251,27 @@ public class GameScreen implements Screen {
         }
         if(Gdx.input.isKeyPressed(Input.Keys.D)){
             player.body.applyForceToCenter(new Vector2(3000, 0), true);
+            direction = 1;
         }
         if(Gdx.input.isKeyPressed(Input.Keys.A)){
             player.body.applyForceToCenter(new Vector2(-3000, 0), true);
+            direction = 0;
         }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.L)){
+            Body body = enemy.getBody();
+            if (body.getPosition().x < player.body.getPosition().x + 55 &&
+            player.body.getPosition().x < body.getPosition().x && direction == 1){
+                huh.play();
+                enemy.isAlive = false;
+            } else if (body.getPosition().x > player.body.getPosition().x - 55 &&
+                player.body.getPosition().x > body.getPosition().x && direction == 0){
+                huh.play();
+                enemy.isAlive = false;
+            }
+        }
+
+
         moveCamera();
         if(Gdx.input.isTouched()) {
 //            System.out.println(
@@ -257,6 +297,7 @@ public class GameScreen implements Screen {
         //Для отображения объектов через batch.begin() batch.end()
         batch.setProjectionMatrix(camera.combined);
 
+        enemy.update(delta, player);
         batch.begin();
         renderBackground(delta);
         batch.end();
@@ -264,6 +305,10 @@ public class GameScreen implements Screen {
         //Отображение карты
         renderer.setView(camera);
         renderer.render();
+
+        batch.begin();
+        enemy.render(batch);
+        batch.end();
 
         //Отвечает за отрисовку границ rectangle
         b2dr.render(world, camera.combined);
@@ -274,6 +319,17 @@ public class GameScreen implements Screen {
         deleteBodies();
         //Физическая симуляция мира
         world.step(1/160f, 6, 2);
+
+        if (enemy.isAlive == false){
+            myGdxGame.setScreen((Screen) myGdxGame.resultScreen);
+            long now = TimeUtils.millis() - startMills;
+            myGdxGame.resultScreen.setFinalTime(now);
+            myGdxGame.setScreen(myGdxGame.resultScreen);
+        }
+
+        if (Gdx.input.justTouched()){
+            enemy.isAlive = false;
+        }
 
     }
 

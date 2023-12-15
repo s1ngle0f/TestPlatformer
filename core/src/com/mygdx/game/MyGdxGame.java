@@ -3,6 +3,7 @@ package com.mygdx.game;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -24,6 +25,7 @@ public class MyGdxGame extends Game {
 	SpriteBatch batch;
 	OrthographicCamera camera = new OrthographicCamera(), hudCamera = new OrthographicCamera();
 	GameScreen gameScreen;
+	ResultScreen resultScreen;
 
 	public static MyGdxGame instance;
 
@@ -40,7 +42,8 @@ public class MyGdxGame extends Game {
 		hudCamera.setToOrtho(false, WIDTH, HEIGHT);
 
 		batch = new SpriteBatch();
-		gameScreen = new GameScreen(batch, camera, hudCamera);
+		gameScreen = new GameScreen(batch, camera, hudCamera, this);
+		resultScreen = new ResultScreen(batch, camera);
 		setScreen(gameScreen);
 	}
 
