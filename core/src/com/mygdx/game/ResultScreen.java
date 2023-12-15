@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 
 public class ResultScreen implements Screen {
     SpriteBatch batch;
@@ -16,31 +17,26 @@ public class ResultScreen implements Screen {
     long time = -1;
     String timeFinal = "";
     private OrthographicCamera camera;
-
+    private FitViewport hudViewport;
     public ResultScreen(SpriteBatch batch, OrthographicCamera camera) {
         this.batch = batch;
         this.camera = camera;
+        hudViewport = new FitViewport(MyGdxGame.WIDTH, MyGdxGame.HEIGHT, camera);
         font = new BitmapFont();
         font.setColor(Color.WHITE); // цвет текста (белый)
-        font.getData().setScale(10);
+        font.getData().setScale(.3f);
     }
 
     public void create () {
 
     }
 
-    public void setFinalTime(long Time){
-        int seconds = (int) Time / 1000;
+    public void setFinalTime(float time){
+        int seconds = (int) (time % 60);
 
         int mins = (int) seconds / 60;
-        int minFirst = (int) mins % 10;
-        int minSec = (int) mins / 10;
 
-        int sec = seconds - (mins * 60);
-        int secFirst = seconds % 10;
-        int secSec = (int) seconds / 10;
-
-        timeFinal = (minFirst + minSec + ":" + secFirst + secSec);
+        timeFinal = (mins + " : " + seconds);
     }
 
     @Override
@@ -48,10 +44,12 @@ public class ResultScreen implements Screen {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        batch.setProjectionMatrix(camera.combined);
+
         batch.begin();
         font.draw(batch, "You won!", camera.position.x, camera.position.y);
 
-        font.draw(batch, timeFinal, 800, 700); // текст и координаты вывода
+        font.draw(batch, timeFinal, camera.position.x, camera.position.y - 10); // текст и координаты вывода
         batch.end();
     }
 
@@ -61,7 +59,10 @@ public class ResultScreen implements Screen {
     }
     @Override
     public void resize(int width, int height) {
+        hudViewport.update(width, height, true);
 		camera.position.set(camera.viewportWidth / 2f, camera.viewportHeight / 2f, 0);
+        MyGdxGame.SCREEN_WIDTH = hudViewport.getScreenWidth();
+        MyGdxGame.SCREEN_HEIGHT = hudViewport.getScreenHeight();
     }
 
 

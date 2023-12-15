@@ -68,6 +68,7 @@ public class GameScreen implements Screen {
     Sound bruh, huh;
 
     int direction = -1;
+    private float time = 0;
     private MyGdxGame myGdxGame;
 
 
@@ -243,6 +244,7 @@ public class GameScreen implements Screen {
     @Override
     public void render(float delta) {
         ScreenUtils.clear(1,1,1,1);
+        time += delta;
         updateTouch();
 
         if(Gdx.input.isKeyJustPressed(Input.Keys.W)){
@@ -321,9 +323,7 @@ public class GameScreen implements Screen {
         world.step(1/160f, 6, 2);
 
         if (enemy.isAlive == false){
-            myGdxGame.setScreen((Screen) myGdxGame.resultScreen);
-            long now = TimeUtils.millis() - startMills;
-            myGdxGame.resultScreen.setFinalTime(now);
+            myGdxGame.resultScreen.setFinalTime(time);
             myGdxGame.setScreen(myGdxGame.resultScreen);
         }
 
