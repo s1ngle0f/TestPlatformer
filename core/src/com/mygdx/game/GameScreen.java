@@ -28,6 +28,9 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
@@ -84,6 +87,9 @@ public class GameScreen implements Screen {
         gameViewport = new FitViewport(MyGdxGame.WIDTH, MyGdxGame.HEIGHT, camera);
         hudViewport = new FitViewport(MyGdxGame.WIDTH, MyGdxGame.HEIGHT, hudCamera);
         hudStage = new Stage(hudViewport, batch);
+
+        Drawable active_button = new TextureRegionDrawable(new Texture("active_button.png"));
+        Drawable none_active_button = new TextureRegionDrawable(new Texture("none_active_button.png"));
 
         deleteLater= new Texture("badlogic.jpg");
         tmxMapLoader = new TmxMapLoader();
@@ -167,9 +173,15 @@ public class GameScreen implements Screen {
         joystick = new Joystick(hudViewport, hudCamera, new Texture("bgJoystick.png"),
                 new Texture("fgStick.png"), 20, 6);
         hudStage.addActor(joystick);
-
+        Button button = new Button(none_active_button, active_button);
+        button.setPosition(10,10);
+        button.setWidth(10);
+        button.setHeight(6);
+        hudStage.addActor(button);
         initBackground();
         enemy = new Enemy(world, player.body.getPosition().x - 10, player.body.getPosition().y);
+
+        Gdx.input.setInputProcessor(hudStage);
     }
 
     private void initCoinsBody(BodyDef bodyDef, PolygonShape shape, FixtureDef fixtureDef) {
