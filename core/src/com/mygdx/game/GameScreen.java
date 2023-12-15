@@ -189,7 +189,7 @@ public class GameScreen implements Screen {
 
     private void startConfig() {
         Vector2 startPos = new Vector2(365, 374);
-        player = new Player(world, batch, deleteLater);
+        player = new Player(world, batch, 50, 50);
         player.body.setTransform(startPos, player.body.getAngle());
         camera.position.set(player.body.getPosition().x, player.body.getPosition().y, 0);
         System.out.println("Player: " + player.body);
@@ -310,6 +310,7 @@ public class GameScreen implements Screen {
 
         batch.begin();
         enemy.render(batch);
+        player.render(delta);
         batch.end();
 
         //Отвечает за отрисовку границ rectangle
