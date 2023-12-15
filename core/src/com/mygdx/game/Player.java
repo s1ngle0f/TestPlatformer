@@ -122,21 +122,24 @@ public class Player extends Sprite {
 
     private void selectorAnimations(float delta){
         Vector2 linearVelocity = body.getLinearVelocity();
-        if(Math.abs(linearVelocity.x) > 0.05f){
+        if(linearVelocity.x > 0) {
             curAnim = "run";
-            if(linearVelocity.x > 0)
-                direction.set(1, 1);
-            else if(linearVelocity.x < 0)
-                direction.set(-1, 1);
+            direction.set(1, 1);
             playAnimation(curAnim, direction);
-        }else{
+        }
+        else if(linearVelocity.x < 0) {
+            curAnim = "run";
+            direction.set(-1, 1);
+            playAnimation(curAnim, direction);
+        }
+        if (linearVelocity.x == 0){
             curAnim = "idle";
             direction.set(1, 1);
             playAnimation(curAnim, direction);
         }
+
         if(!lastAnim.equals(curAnim))
             resetAnimationTimer();
-
     }
 
     public void setUserData(String player) {
