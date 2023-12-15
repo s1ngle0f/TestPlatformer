@@ -86,7 +86,6 @@ public class Player extends Sprite {
 
     public void resetAnimationTimer(){
         startAnimTime = time;
-        System.out.println(curAnim + " " + lastAnim);
     }
 
     private void definePlayer() {

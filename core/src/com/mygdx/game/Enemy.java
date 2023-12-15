@@ -3,6 +3,8 @@ package com.mygdx.game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -17,6 +19,7 @@ public class Enemy {
     private World world;
     private Body body;
     private Texture texture, texture2;
+    private TextureRegion textureRegion;
 
     public boolean isAlive = true;
 
@@ -47,12 +50,18 @@ public class Enemy {
 
         texture = new Texture(Gdx.files.internal("badlogic.jpg"));
         texture2 = new Texture(Gdx.files.internal("badlogicDEAD.jpg"));
+        textureRegion = new TextureRegion(texture);
 
     }
 
     public void render(SpriteBatch batch) {
-        if (isAlive)
-            batch.draw(texture, body.getPosition().x - 5, body.getPosition().y - 5, 10, 10);
+        if (isAlive) {
+            batch.draw(textureRegion,
+                    body.getPosition().x - 5,
+                    body.getPosition().y - 5,
+                    5, 5, 10, 10, 1, 1, body.getAngle()* MathUtils.radiansToDegrees);
+            System.out.println(body.getAngle());
+        }
         else
             batch.draw(texture2, body.getPosition().x - 5, body.getPosition().y - 5, 10, 10);
     }
