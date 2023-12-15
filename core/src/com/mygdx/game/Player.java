@@ -15,6 +15,7 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.TimeUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +31,25 @@ public class Player extends Sprite {
     private SpriteBatch batch;
     Texture deleteLater;
     Vector2 direction = new Vector2();
-    String curAnim = "", lastAnim = "";
+    private boolean attackPlay = false;
+    private long startAttackTime = -1;
+
+    private boolean isInvease = false;
+    private long startEnvease;
+    private int jumpCounter = 0;
+
+
+
+    public void setDirect(int direct) {
+        this.direct = direct;
+    }
+
+    public int getDirect() {
+        return direct;
+    }
+
+    private int direct = 1;
+    String curAnim = "idle", lastAnim = "idle";
     public Player(World world, SpriteBatch batch, float width, float height){
         this.world = world;
         this.batch = batch;
@@ -44,6 +63,15 @@ public class Player extends Sprite {
         addAnimation("run", "TMS/bg/players/FantasyWarrior/Sprites/RunRight.png",
                 162, 162, .1f, 1, 8, 0,
                 Animation.PlayMode.LOOP);
+        addAnimation("fall", "TMS/bg/players/FantasyWarrior/Sprites/FallRight.png",
+                162, 162, .1f, 1, 3, 0,
+                Animation.PlayMode.LOOP);
+        addAnimation("jump", "TMS/bg/players/FantasyWarrior/Sprites/JumpRight.png",
+                162, 162, .1f, 1, 3, 0,
+                Animation.PlayMode.LOOP);
+        addAnimation("attack", "TMS/bg/players/FantasyWarrior/Sprites/Attack1Right.png",
+                162, 162, .1f, 1, 7, 0,
+                Animation.PlayMode.NORMAL);
     }
 
     private void playAnimation(String name, Vector2 unitScale){
@@ -109,6 +137,13 @@ public class Player extends Sprite {
         selectorAnimations(delta);
 
         lastAnim = curAnim;
+
+        if ((TimeUtils.millis() - startAttackTime) > 800){
+            attackPlay = false;
+        }
+        if ((TimeUtils.millis() - startEnvease) > 3000){
+            isInvease = false;
+        }
     }
 
     private Vector2 calculateDirection() { // Немножко говнокод, но пока норм!
@@ -121,19 +156,55 @@ public class Player extends Sprite {
 
     private void selectorAnimations(float delta){
         Vector2 linearVelocity = body.getLinearVelocity();
-        if(linearVelocity.x > 0) {
+        if(linearVelocity.x > 0 && linearVelocity.y == 0 && attackPlay == false) {
             curAnim = "run";
             direction.set(1, 1);
             playAnimation(curAnim, direction);
         }
-        else if(linearVelocity.x < 0) {
+        else if(linearVelocity.x < 0 && linearVelocity.y == 0 && attackPlay == false) {
             curAnim = "run";
             direction.set(-1, 1);
             playAnimation(curAnim, direction);
         }
-        if (linearVelocity.x == 0){
+        if (linearVelocity.x == 0 && linearVelocity.y == 0 && direct == 1 && attackPlay == false){
             curAnim = "idle";
             direction.set(1, 1);
+            playAnimation(curAnim, direction);
+        }
+        else if (linearVelocity.x == 0 && linearVelocity.y == 0 && direct == -1 && attackPlay == false){
+            curAnim = "idle";
+            direction.set(-1, 1);
+            playAnimation(curAnim, direction);
+        }
+        if (linearVelocity.y < 0 && direct == 1 && attackPlay == false){
+            curAnim = "fall";
+            direction.set(1, 1);
+            playAnimation(curAnim, direction);
+        }
+        else if (linearVelocity.y < 0 && direct == -1 && attackPlay == false){
+            curAnim = "fall";
+            direction.set(-1, 1);
+            playAnimation(curAnim, direction);
+        }
+
+        if (linearVelocity.y > 0 && direct == 1 && attackPlay == false){
+            curAnim = "jump";
+            direction.set(1, 1);
+            playAnimation(curAnim, direction);
+        }
+        else if (linearVelocity.y > 0 && direct == -1 && attackPlay == false){
+            curAnim = "jump";
+            direction.set(-1, 1);
+            playAnimation(curAnim, direction);
+        }
+        if (attackPlay && direct == 1){
+            curAnim = "attack";
+            direction.set(1, 1);
+            playAnimation(curAnim, direction);
+        }
+        else if (attackPlay && direct == -1){
+            curAnim = "attack";
+            direction.set(-1, 1);
             playAnimation(curAnim, direction);
         }
 
@@ -153,5 +224,34 @@ public class Player extends Sprite {
         if(f > 0) return 1;
         if(f < 0) return -1;
         return 0;
+    }
+
+    public void setAttack (boolean isAttack){
+        this.attackPlay = isAttack;
+    }
+
+    public boolean getAttack (){
+        return attackPlay;
+    }
+
+    public void setStartAttack (long millis){
+        this.startAttackTime = millis;
+    }
+
+    public boolean isInvease() {
+        return isInvease;
+    }
+
+    public void startInvease(){
+        startEnvease = TimeUtils.millis();
+        isInvease = true;
+    }
+
+    public int getJumpCounter() {
+        return jumpCounter;
+    }
+
+    public void setJumpCounter(int jumpCounter) {
+        this.jumpCounter = jumpCounter;
     }
 }

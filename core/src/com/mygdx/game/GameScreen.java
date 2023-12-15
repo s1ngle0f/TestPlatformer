@@ -65,7 +65,7 @@ public class GameScreen implements Screen {
     List<Body> bodyForDelete = new ArrayList<>();
     private TiledMapTileLayer coinLayer;
     private Enemy enemy;
-    Sound bruh, huh;
+     Sound bruh, huh;
 
     int direction = -1;
     private float time = 0;
@@ -106,10 +106,15 @@ public class GameScreen implements Screen {
                         bodyForDelete.add(contact.getFixtureA().getBody());
                     }
                 if(contact.getFixtureB().getBody() == player.body && contact.getFixtureA().getBody() == enemy.getBody()){
-                        huh.play();
+                        enemy.handleCollision(player);
+                        if(player.isInvease() == false)
+                            player.startInvease();
                 } else if(contact.getFixtureA().getBody() == player.body && contact.getFixtureB().getBody() == enemy.getBody()){
-                    bruh.play();
-                }
+                    enemy.handleCollision(player);
+                    if (player.isInvease() == false)
+                        player.startInvease();
+                } if (contact.getFixtureB().getBody() == player.body &&  ground.contains(contact.getFixtureA().getBody()))
+                    player.setJumpCounter(0);
             }
 
             @Override
@@ -188,7 +193,7 @@ public class GameScreen implements Screen {
     }
 
     private void startConfig() {
-        Vector2 startPos = new Vector2(365, 374);
+        Vector2 startPos = new Vector2(640, 400);
         player = new Player(world, batch, 50, 50);
         player.body.setTransform(startPos, player.body.getAngle());
         camera.position.set(player.body.getPosition().x, player.body.getPosition().y, 0);
@@ -247,27 +252,43 @@ public class GameScreen implements Screen {
         time += delta;
         updateTouch();
 
+        if (joystick.getResult().x > 0.75f && joystick.getResult().y < 0.5f) {
+            player.body.applyForceToCenter(new Vector2(3000, 0), true);
+            player.setDirect(1);
+        }
+        if (joystick.getResult().x < -0.75f && joystick.getResult().y < 0.5f) {
+            player.body.applyForceToCenter(new Vector2(-3000, 0), true);
+            player.setDirect(-1);
+        }
+
         if(Gdx.input.isKeyJustPressed(Input.Keys.W)){
-            player.body.applyLinearImpulse(new Vector2(0, 700000),
-                    player.body.getPosition(), true);
+            int jumpCounter = player.getJumpCounter();
+
+            if (jumpCounter < 2) {
+                player.body.applyLinearImpulse(new Vector2(0, 700000),
+                        player.body.getPosition(), true);
+                player.setJumpCounter(jumpCounter + 1);
+            }
         }
         if(Gdx.input.isKeyPressed(Input.Keys.D)){
             player.body.applyForceToCenter(new Vector2(3000, 0), true);
-            direction = 1;
+            player.setDirect(1);
         }
         if(Gdx.input.isKeyPressed(Input.Keys.A)){
             player.body.applyForceToCenter(new Vector2(-3000, 0), true);
-            direction = 0;
+            player.setDirect(-1);
         }
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.L)){
+        if (Gdx.input.isKeyJustPressed(Input.Keys.L) && player.getAttack() == false){
             Body body = enemy.getBody();
-            if (body.getPosition().x < player.body.getPosition().x + 55 &&
-            player.body.getPosition().x < body.getPosition().x && direction == 1){
+            player.setAttack(true);
+            player.setStartAttack(TimeUtils.millis());
+            if (body.getPosition().x < player.body.getPosition().x + 20 &&
+            player.body.getPosition().x < body.getPosition().x && player.getDirect() == 1){
                 huh.play();
                 enemy.isAlive = false;
-            } else if (body.getPosition().x > player.body.getPosition().x - 55 &&
-                player.body.getPosition().x > body.getPosition().x && direction == 0){
+            } else if (body.getPosition().x > player.body.getPosition().x - 20 &&
+                player.body.getPosition().x > body.getPosition().x && player.getDirect() == -1){
                 huh.play();
                 enemy.isAlive = false;
             }
@@ -323,14 +344,14 @@ public class GameScreen implements Screen {
         //Физическая симуляция мира
         world.step(1/160f, 6, 2);
 
-        if (enemy.isAlive == false){
-            myGdxGame.resultScreen.setFinalTime(time);
-            myGdxGame.setScreen(myGdxGame.resultScreen);
-        }
-
-        if (Gdx.input.justTouched()){
-            enemy.isAlive = false;
-        }
+//        if (enemy.isAlive == false){
+//            myGdxGame.resultScreen.setFinalTime(time);
+//            myGdxGame.setScreen(myGdxGame.resultScreen);
+//        }
+//
+//        if (Gdx.input.justTouched()){
+//            enemy.isAlive = false;
+//        }
 
     }
 

@@ -1,6 +1,7 @@
 package com.mygdx.game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -15,6 +16,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import java.util.Random;
 
 public class Enemy {
+    Sound bruh, huh;
     private boolean playerContact = false;
     private World world;
     private Body body;
@@ -26,6 +28,8 @@ public class Enemy {
     public Enemy(World world, float x, float y) {
         this.world = world;
 
+        bruh = Gdx.audio.newSound(Gdx.files.internal("TMS/bruh.mp3"));
+        huh = Gdx.audio.newSound(Gdx.files.internal("TMS/huh.mp3"));
 
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.DynamicBody;
@@ -79,8 +83,12 @@ public class Enemy {
 
     }
 
-    public void handleCollision() {
-        System.out.println("Enemy collided!");
+    public void handleCollision(Player player) {
+        if (isAlive == true && player.isInvease() == false){
+            huh.play();
+        }
+
+        //System.out.println("Enemy collided!");
     }
 
     public void setUserData(String enemy) {
@@ -90,5 +98,7 @@ public class Enemy {
     public Body getBody(){
         return body;
     }
+
+
 }
 
